@@ -1,5 +1,5 @@
-import { prepareWithSegments, layoutNextLine } from '@chenglou/pretext'
-import * as lucide from 'lucide';
+import { prepareWithSegments, layoutNextLine } from 'https://esm.sh/@chenglou/pretext'
+import * as lucide from 'https://esm.sh/lucide';
 
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
