@@ -227,23 +227,35 @@ function getLatestWord() {
     return '';
 }
 
-function updateShapeTarget(text) {
-    const lastWord = getLatestWord();
-    if (!lastWord) return;
-
-    let possibleMatch = Object.keys(lucide.icons).find(k => k.toLowerCase() === lastWord);
-    
-    // Resolve tags via synonym dictionary if primary name falls through
+function findMatch(query) {
+    let possibleMatch = Object.keys(lucide.icons).find(k => k.toLowerCase() === query);
     if (!possibleMatch) {
-         for (const [kebabName, tags] of Object.entries(lucideTags)) {
-              if (tags.some(tag => tag.toLowerCase() === lastWord)) {
-                  const pascalName = kebabName.split('-').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join('');
-                  if (lucide.icons[pascalName]) {
-                      possibleMatch = pascalName;
-                      break;
-                  }
-              }
-         }
+        for (const [kebabName, tags] of Object.entries(lucideTags)) {
+            if (tags.some(tag => tag.toLowerCase() === query)) {
+                const pascalName = kebabName.split('-').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join('');
+                if (lucide.icons[pascalName]) {
+                    return pascalName;
+                }
+            }
+        }
+    }
+    return possibleMatch;
+}
+
+function updateShapeTarget(text) {
+    const lastWordFull = getLatestWord();
+    if (!lastWordFull) return;
+
+    let possibleMatch = null;
+    let matchedSubword = lastWordFull;
+
+    for (let j = 0; j < lastWordFull.length; j++) {
+        const subWord = lastWordFull.slice(j);
+        possibleMatch = findMatch(subWord);
+        if (possibleMatch) {
+            matchedSubword = subWord;
+            break;
+        }
     }
 
     let newTarget = targetShape;
@@ -251,28 +263,28 @@ function updateShapeTarget(text) {
     if (possibleMatch) {
       if (!shapePixelCache[possibleMatch] || shapePixelCache[possibleMatch] === 'loading') {
           loadShapePixels(possibleMatch, () => {
-              if (targetShape !== possibleMatch && getLatestWord() === possibleMatch.toLowerCase() || Object.values(lucideTags).flat().some(t => t.toLowerCase() === getLatestWord())) {
+              if (targetShape !== possibleMatch) {
                   previousShape = targetShape;
                   targetShape = possibleMatch;
                   shapeProgress = 0;
-                  typedText = getLatestWord(); 
+                  typedText = matchedSubword; 
                   hiddenInput.value = typedText;
               }
           });
       } else if (shapePixelCache[possibleMatch] && shapePixelCache[possibleMatch] !== 'loading') {
           newTarget = possibleMatch;
           if (newTarget !== targetShape) {
-              typedText = getLatestWord(); 
+              typedText = matchedSubword; 
               hiddenInput.value = typedText;
           }
       }
     }
 
-    if (lastWord === 'square' || lastWord === 'circle' || lastWord === 'triangle') {
-        const mathMatch = lastWord.charAt(0).toUpperCase() + lastWord.slice(1);
+    if (matchedSubword === 'square' || matchedSubword === 'circle' || matchedSubword === 'triangle') {
+        const mathMatch = matchedSubword.charAt(0).toUpperCase() + matchedSubword.slice(1);
         if (targetShape !== mathMatch) {
              newTarget = mathMatch;
-             typedText = lastWord; 
+             typedText = matchedSubword; 
              hiddenInput.value = typedText;
         }
     }
