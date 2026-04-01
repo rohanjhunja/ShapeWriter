@@ -21,6 +21,11 @@ let isIdle = false;
 let idleShapeTime = 0;
 let targetWord = "";
 
+let pasteQueue = [];
+let pasteTimer = 0;
+let isFocused = false;
+let currentCenterY = null;
+
 const curatedObjects = [
     'Anchor', 'Apple', 'Axe', 'Backpack', 'Banana', 'Banknote', 'Bath', 'Bean', 'Bed', 'Beer', 'Bell', 'Bike', 'Bird', 'Bomb', 'Bone', 'Book', 'Bookmark', 'BoomBox', 'Bot', 'Briefcase', 'Brush', 'Bug', 'Building', 'Bus', 'Calculator', 'Calendar', 'Camera', 'Car', 'Carrot', 'Castle', 'Cat', 'Church', 'Cigarette', 'Clipboard', 'Clock', 'Cloud', 'Clover', 'Coffee', 'Coins', 'Compass', 'Croissant', 'Crown', 'CupSoda', 'Database', 'Diamond', 'Dice1', 'Dice2', 'Dice3', 'Dice4', 'Dice5', 'Dice6', 'Dog', 'Droplet', 'Drum', 'Dumbbell', 'Egg', 'Eye', 'Factory', 'Feather', 'Fingerprint', 'Fish', 'Flag', 'Flame', 'FlaskConical', 'Flower', 'Gamepad', 'Gavel', 'Gem', 'Ghost', 'Gift', 'Glasses', 'Globe', 'Grape', 'Guitar', 'Hammer', 'HardHat', 'Headphones', 'Heart', 'Helicopter', 'Home', 'Hospital', 'Hourglass', 'IceCream', 'Key', 'Keyboard', 'Lamp', 'Laptop', 'Leaf', 'Lightbulb', 'Lollipop', 'Magnet', 'Map', 'Martini', 'Medal', 'Microchip', 'Microphone', 'Microscope', 'Monitor', 'Moon', 'Mountain', 'Mouse', 'Mushroom', 'Music', 'Newspaper', 'Nut', 'Package', 'Paintbrush', 'Palette', 'Pen', 'Pencil', 'Piano', 'Pickaxe', 'Pill', 'Pizza', 'Plane', 'Printer', 'Puzzle', 'Rabbit', 'Rocket', 'Ruler', 'Sailboat', 'Sandwich', 'Scissors', 'Shield', 'Ship', 'Shirt', 'Shovel', 'Skull', 'Smartphone', 'Snail', 'Snowflake', 'Sofa', 'Spade', 'Speaker', 'Sprout', 'Star', 'Stethoscope', 'Sun', 'Swords', 'Syringe', 'Tent', 'Telescope', 'Thermometer', 'Ticket', 'Toilet', 'Tornado', 'Train', 'TramFront', 'TreeDeciduous', 'TreePine', 'Trees', 'Trophy', 'Truck', 'Turtle', 'Umbrella', 'Usb', 'Wallet', 'Watch', 'Wind', 'Wine', 'Wrench', 'Zap'
 ];
@@ -165,58 +170,119 @@ function resize() {
 
 window.addEventListener('resize', resize);
 
-window.addEventListener('keydown', (e) => {
-  if (e.ctrlKey || e.metaKey || e.altKey) return;
-  
-  timeSinceLastKey = 0;
-  if (isIdle) {
-      isIdle = false;
-      typedText = '';
-      targetShape = 'Square';
-      shapeProgress = 0;
-  }
-  
-  if (e.key === 'Backspace') {
-    typedText = typedText.slice(0, -1);
-    textScale = 1.01; 
-  } else if (e.key.length === 1) {
-    if (typedText === 'type here') typedText = '';
-    typedText += e.key;
-    textScale = 1.01; 
-    
-    if (typedText.endsWith('  ')) {
-        typedText = '';
-        targetShape = 'Square';
+const hiddenInput = document.createElement('input');
+hiddenInput.type = 'text';
+hiddenInput.style.position = 'absolute';
+hiddenInput.style.opacity = 0;
+hiddenInput.style.pointerEvents = 'none';
+hiddenInput.style.zIndex = -1;
+hiddenInput.autocomplete = 'off';
+hiddenInput.autocorrect = 'off';
+hiddenInput.autocapitalize = 'off';
+hiddenInput.spellcheck = false;
+document.body.appendChild(hiddenInput);
+
+window.addEventListener('click', () => hiddenInput.focus());
+window.addEventListener('touchstart', () => hiddenInput.focus());
+document.addEventListener('keydown', () => {
+    if (document.activeElement !== hiddenInput) {
+        hiddenInput.focus();
     }
-  }
-  
-  const lower = typedText.toLowerCase().trim().replace(/[^a-z0-9]/g, '');
-  
-  // Lookup across lucide's vast library
-  const iconKeys = Object.keys(lucide.icons);
-  const possibleMatch = iconKeys.find(k => k.toLowerCase() === lower);
-  
-  let newTarget = targetShape;
-  if (possibleMatch) {
+});
+
+hiddenInput.addEventListener('focus', () => isFocused = true);
+hiddenInput.addEventListener('blur', () => isFocused = false);
+
+window.addEventListener('paste', (e) => {
+    e.preventDefault();
+    const pasteText = (e.clipboardData || window.clipboardData).getData('text');
+    if (pasteText) pasteQueue.push(...pasteText.split(''));
+});
+
+hiddenInput.addEventListener('paste', (e) => {
+    e.preventDefault();
+    const pasteText = (e.clipboardData || window.clipboardData).getData('text');
+    if (pasteText) pasteQueue.push(...pasteText.split(''));
+});
+
+function getLatestWord() {
+    const words = typedText.split(' ');
+    for (let i = words.length - 1; i >= 0; i--) {
+        if (words[i].trim().length > 0) {
+            return words[i].trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+        }
+    }
+    return '';
+}
+
+function updateShapeTarget(text) {
+    const lastWord = getLatestWord();
+    if (!lastWord) return;
+
+    let possibleMatch = curatedObjects.find(obj => obj.toLowerCase() === lastWord);
+    let newTarget = targetShape;
+
+    if (possibleMatch) {
       if (!shapePixelCache[possibleMatch] || shapePixelCache[possibleMatch] === 'loading') {
           loadShapePixels(possibleMatch, () => {
-              const currentLower = typedText.toLowerCase().trim().replace(/[^a-z0-9]/g, '');
-              if (currentLower === possibleMatch.toLowerCase() && targetShape !== possibleMatch) {
+              if (targetShape !== possibleMatch && getLatestWord() === possibleMatch.toLowerCase()) {
                   previousShape = targetShape;
                   targetShape = possibleMatch;
                   shapeProgress = 0;
+                  // Replace sentence gracefully with new recognized word via space logic
+                  typedText = possibleMatch.toLowerCase();
+                  hiddenInput.value = typedText;
               }
           });
       } else if (shapePixelCache[possibleMatch] && shapePixelCache[possibleMatch] !== 'loading') {
           newTarget = possibleMatch;
+          if (newTarget !== targetShape) {
+              typedText = possibleMatch.toLowerCase();
+              hiddenInput.value = typedText;
+          }
       }
+    }
+
+    if (lastWord === 'square' || lastWord === 'circle' || lastWord === 'triangle') {
+        const mathMatch = lastWord.charAt(0).toUpperCase() + lastWord.slice(1);
+        if (targetShape !== mathMatch) {
+             newTarget = mathMatch;
+             typedText = lastWord; 
+             hiddenInput.value = typedText;
+        }
+    }
+
+    // Sticky targets: we never revert to baseline Square unless explicitly driven by double space
+    if (newTarget !== targetShape && newTarget !== 'loading') {
+        previousShape = targetShape; 
+        targetShape = newTarget;
+        shapeProgress = 0;
+    }
+}
+
+hiddenInput.addEventListener('input', (e) => {
+  timeSinceLastKey = 0;
+  if (isIdle) {
+      isIdle = false;
+      typedText = '';
+      hiddenInput.value = '';
+      targetShape = 'Square';
+      shapeProgress = 0;
+      return;
   }
   
-  if (newTarget !== targetShape) {
-    previousShape = targetShape; 
-    targetShape = newTarget;
-    shapeProgress = 0;
+  if (hiddenInput.value.endsWith('  ')) {
+      typedText = '';
+      hiddenInput.value = '';
+      targetShape = 'Square';
+      shapeProgress = 0;
+      return;
   }
+  
+  typedText = hiddenInput.value;
+  textScale = 1.01;
+  
+  updateShapeTarget(typedText);
 });
 
 function render(time) {
@@ -265,11 +331,21 @@ function render(time) {
       }
   }
   
+  if (pasteQueue.length > 0) {
+      pasteTimer += delta;
+      if (pasteTimer > 50) { 
+          pasteTimer = 0;
+          const char = pasteQueue.shift();
+          hiddenInput.value += char;
+          hiddenInput.dispatchEvent(new Event('input')); 
+      }
+  }
+  
   if (shapeProgress < 1) {
       shapeProgress += delta / 600; 
       if (shapeProgress > 1) shapeProgress = 1;
   }
-  
+
   if (textScale > 1) {
       textScale -= delta / 300; 
       if (textScale < 1) textScale = 1;
@@ -285,7 +361,16 @@ function render(time) {
 
   // Max dimension bounds 
   const maxShapeSize = Math.min(width, height) * 0.7; 
-  const centerY = height / 2; 
+  
+  let targetCenterY = height / 2; 
+  if (isFocused && width < 768) {
+      targetCenterY = height * 0.30; // Shift upward cleanly for mobile keyboards
+  }
+  
+  if (currentCenterY === null) currentCenterY = height / 2;
+  currentCenterY += (targetCenterY - currentCenterY) * delta * 0.005;
+  
+  const centerY = currentCenterY;
   const centerX = width / 2;
 
   const p = shapeProgress < 0.5 ? 2 * shapeProgress * shapeProgress : 1 - Math.pow(-2 * shapeProgress + 2, 2) / 2;
