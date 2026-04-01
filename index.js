@@ -196,13 +196,19 @@ hiddenInput.addEventListener('blur', () => isFocused = false);
 window.addEventListener('paste', (e) => {
     e.preventDefault();
     const pasteText = (e.clipboardData || window.clipboardData).getData('text');
-    if (pasteText) pasteQueue.push(...pasteText.split(''));
+    if (pasteText) {
+        const normalized = pasteText.replace(/[\r\n]+/g, ' ');
+        pasteQueue.push(...normalized.split(''));
+    }
 });
 
 hiddenInput.addEventListener('paste', (e) => {
     e.preventDefault();
     const pasteText = (e.clipboardData || window.clipboardData).getData('text');
-    if (pasteText) pasteQueue.push(...pasteText.split(''));
+    if (pasteText) {
+        const normalized = pasteText.replace(/[\r\n]+/g, ' ');
+        pasteQueue.push(...normalized.split(''));
+    }
 });
 
 function getLatestWord() {
