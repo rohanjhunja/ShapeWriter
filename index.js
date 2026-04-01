@@ -30,6 +30,12 @@ const curatedObjects = [
     'Anchor', 'Apple', 'Axe', 'Backpack', 'Banana', 'Banknote', 'Bath', 'Bean', 'Bed', 'Beer', 'Bell', 'Bike', 'Bird', 'Bomb', 'Bone', 'Book', 'Bookmark', 'BoomBox', 'Bot', 'Briefcase', 'Brush', 'Bug', 'Building', 'Bus', 'Calculator', 'Calendar', 'Camera', 'Car', 'Carrot', 'Castle', 'Cat', 'Church', 'Cigarette', 'Clipboard', 'Clock', 'Cloud', 'Clover', 'Coffee', 'Coins', 'Compass', 'Croissant', 'Crown', 'CupSoda', 'Database', 'Diamond', 'Dice1', 'Dice2', 'Dice3', 'Dice4', 'Dice5', 'Dice6', 'Dog', 'Droplet', 'Drum', 'Dumbbell', 'Egg', 'Eye', 'Factory', 'Feather', 'Fingerprint', 'Fish', 'Flag', 'Flame', 'FlaskConical', 'Flower', 'Gamepad', 'Gavel', 'Gem', 'Ghost', 'Gift', 'Glasses', 'Globe', 'Grape', 'Guitar', 'Hammer', 'HardHat', 'Headphones', 'Heart', 'Helicopter', 'Home', 'Hospital', 'Hourglass', 'IceCream', 'Key', 'Keyboard', 'Lamp', 'Laptop', 'Leaf', 'Lightbulb', 'Lollipop', 'Magnet', 'Map', 'Martini', 'Medal', 'Microchip', 'Microphone', 'Microscope', 'Monitor', 'Moon', 'Mountain', 'Mouse', 'Mushroom', 'Music', 'Newspaper', 'Nut', 'Package', 'Paintbrush', 'Palette', 'Pen', 'Pencil', 'Piano', 'Pickaxe', 'Pill', 'Pizza', 'Plane', 'Printer', 'Puzzle', 'Rabbit', 'Rocket', 'Ruler', 'Sailboat', 'Sandwich', 'Scissors', 'Shield', 'Ship', 'Shirt', 'Shovel', 'Skull', 'Smartphone', 'Snail', 'Snowflake', 'Sofa', 'Spade', 'Speaker', 'Sprout', 'Star', 'Stethoscope', 'Sun', 'Swords', 'Syringe', 'Tent', 'Telescope', 'Thermometer', 'Ticket', 'Toilet', 'Tornado', 'Train', 'TramFront', 'TreeDeciduous', 'TreePine', 'Trees', 'Trophy', 'Truck', 'Turtle', 'Umbrella', 'Usb', 'Wallet', 'Watch', 'Wind', 'Wine', 'Wrench', 'Zap'
 ];
 
+let lucideTags = {};
+fetch('https://cdn.jsdelivr.net/npm/lucide-static@latest/tags.json')
+  .then(res => res.json())
+  .then(data => lucideTags = data)
+  .catch(err => console.error('Failed to load Lucide synonyms dictionary', err));
+
 function startNextIdleShape() {
     idleShapeTime = 0;
     typedText = '';
@@ -225,25 +231,38 @@ function updateShapeTarget(text) {
     const lastWord = getLatestWord();
     if (!lastWord) return;
 
-    let possibleMatch = curatedObjects.find(obj => obj.toLowerCase() === lastWord);
+    let possibleMatch = Object.keys(lucide.icons).find(k => k.toLowerCase() === lastWord);
+    
+    // Resolve tags via synonym dictionary if primary name falls through
+    if (!possibleMatch) {
+         for (const [kebabName, tags] of Object.entries(lucideTags)) {
+              if (tags.some(tag => tag.toLowerCase() === lastWord)) {
+                  const pascalName = kebabName.split('-').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join('');
+                  if (lucide.icons[pascalName]) {
+                      possibleMatch = pascalName;
+                      break;
+                  }
+              }
+         }
+    }
+
     let newTarget = targetShape;
 
     if (possibleMatch) {
       if (!shapePixelCache[possibleMatch] || shapePixelCache[possibleMatch] === 'loading') {
           loadShapePixels(possibleMatch, () => {
-              if (targetShape !== possibleMatch && getLatestWord() === possibleMatch.toLowerCase()) {
+              if (targetShape !== possibleMatch && getLatestWord() === possibleMatch.toLowerCase() || Object.values(lucideTags).flat().some(t => t.toLowerCase() === getLatestWord())) {
                   previousShape = targetShape;
                   targetShape = possibleMatch;
                   shapeProgress = 0;
-                  // Replace sentence gracefully with new recognized word via space logic
-                  typedText = possibleMatch.toLowerCase();
+                  typedText = getLatestWord(); 
                   hiddenInput.value = typedText;
               }
           });
       } else if (shapePixelCache[possibleMatch] && shapePixelCache[possibleMatch] !== 'loading') {
           newTarget = possibleMatch;
           if (newTarget !== targetShape) {
-              typedText = possibleMatch.toLowerCase();
+              typedText = getLatestWord(); 
               hiddenInput.value = typedText;
           }
       }
