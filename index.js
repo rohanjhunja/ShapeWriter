@@ -251,6 +251,11 @@ function updateShapeTarget(text) {
 
     for (let j = 0; j < lastWordFull.length; j++) {
         const subWord = lastWordFull.slice(j);
+        
+        if (subWord.length < 3 || ['the', 'and'].includes(subWord)) {
+            continue;
+        }
+
         possibleMatch = findMatch(subWord);
         if (possibleMatch) {
             matchedSubword = subWord;
