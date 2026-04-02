@@ -40,6 +40,7 @@ function startNextIdleShape() {
     idleShapeTime = 0;
     typedText = '';
     targetWord = curatedObjects[Math.floor(Math.random() * curatedObjects.length)];
+    if (typeof hiddenInput !== 'undefined' && hiddenInput) hiddenInput.value = '';
 }
 
 const MASK_RESOLUTION = 800;
@@ -328,11 +329,9 @@ hiddenInput.addEventListener('input', (e) => {
   timeSinceLastKey = 0;
   if (isIdle) {
       isIdle = false;
-      typedText = '';
-      hiddenInput.value = '';
       targetShape = 'Square';
       shapeProgress = 0;
-      return;
+      // Do NOT clear hiddenInput.value or return early here! We want to immediately evaluate this very first keystroke!
   }
   
   if (hiddenInput.value.endsWith('  ')) {
