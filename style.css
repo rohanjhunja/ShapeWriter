@@ -43,7 +43,6 @@ body, html {
   bottom: 2.5rem;
   left: 50%;
   transform: translateX(-50%);
-  animation: pulse-text 4s infinite alternate;
 }
 
 .bottom-right {
@@ -51,6 +50,19 @@ body, html {
   right: 2.5rem;
   pointer-events: auto;
   transition: opacity 0.3s ease;
+}
+
+.top-right {
+  top: 2.5rem;
+  right: 2.5rem;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: opacity 0.3s ease, transform 0.1s ease;
+}
+
+.top-right:hover {
+  opacity: 0.8;
+  transform: scale(1.05) translateY(-1px);
 }
 
 .bottom-right:hover {

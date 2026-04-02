@@ -179,6 +179,8 @@ window.addEventListener('resize', resize);
 const hiddenInput = document.createElement('input');
 hiddenInput.type = 'text';
 hiddenInput.style.position = 'absolute';
+hiddenInput.style.top = '25%'; // Positions it to scroll organically
+hiddenInput.style.left = '50%';
 hiddenInput.style.opacity = 0;
 hiddenInput.style.pointerEvents = 'none';
 hiddenInput.style.zIndex = -1;
@@ -216,6 +218,26 @@ hiddenInput.addEventListener('paste', (e) => {
         pasteQueue.push(...normalized.split(''));
     }
 });
+
+// Setup physical paste button listener bridging to Clipboard API
+const pasteBtn = document.querySelector('.paste-btn');
+if (pasteBtn) {
+    pasteBtn.addEventListener('click', async (e) => {
+        e.stopPropagation(); // Avoid overlapping clicks grabbing hiddenInput focus
+        try {
+            const clipboardText = await navigator.clipboard.readText();
+            if (clipboardText) {
+                const normalized = clipboardText.replace(/[\r\n]+/g, ' ');
+                pasteQueue.push(...normalized.split(''));
+                
+                // Return focus to hidden element quietly!
+                hiddenInput.focus();
+            }
+        } catch (err) {
+            console.error('Failed to read from clipboard. Allow clipboard permissions.', err);
+        }
+    });
+}
 
 function getLatestWord() {
     const words = typedText.split(' ');
@@ -404,10 +426,7 @@ function render(time) {
   // Max dimension bounds 
   const maxShapeSize = Math.min(width, height) * 0.7; 
   
-  let targetCenterY = height / 2; 
-  if (isFocused && width < 768) {
-      targetCenterY = height * 0.30; // Shift upward cleanly for mobile keyboards
-  }
+  const targetCenterY = height / 2; 
   
   if (currentCenterY === null) currentCenterY = height / 2;
   currentCenterY += (targetCenterY - currentCenterY) * delta * 0.005;
