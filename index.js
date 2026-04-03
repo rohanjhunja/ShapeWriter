@@ -281,17 +281,24 @@ function updateShapeTarget(text) {
     let possibleMatch = null;
     let matchedSubword = lastWordFull;
 
-    for (let j = 0; j < lastWordFull.length; j++) {
-        const subWord = lastWordFull.slice(j);
-        
-        if (subWord.length < 3 || ['the', 'and'].includes(subWord)) {
-            continue;
+    // Eliminate suffix checking for words with less than 5 characters to avoid false positives (e.g "hat" in "what")
+    if (lastWordFull.length < 5) {
+        if (lastWordFull.length >= 3 && !['the', 'and'].includes(lastWordFull)) {
+            possibleMatch = findMatch(lastWordFull);
         }
+    } else {
+        for (let j = 0; j < lastWordFull.length; j++) {
+            const subWord = lastWordFull.slice(j);
+            
+            if (subWord.length < 3 || ['the', 'and'].includes(subWord)) {
+                continue;
+            }
 
-        possibleMatch = findMatch(subWord);
-        if (possibleMatch) {
-            matchedSubword = subWord;
-            break;
+            possibleMatch = findMatch(subWord);
+            if (possibleMatch) {
+                matchedSubword = subWord;
+                break;
+            }
         }
     }
 
