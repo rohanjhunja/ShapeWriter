@@ -420,18 +420,26 @@ function render(time) {
   const displayString = typedText || " ";
   const sourceText = Array(200).fill(displayString).join('');
 
-  const isMobile = width < 768;
-  const maxShapeSize = Math.min(width, height) * (isMobile ? 0.9 : 0.7); 
+  let activeWidth = width;
+  let activeHeight = height;
+  let activePageTop = 0;
+  
+  if (window.visualViewport) {
+      activeWidth = window.visualViewport.width;
+      activeHeight = window.visualViewport.height;
+      activePageTop = window.visualViewport.pageTop;
+  }
+  
+  const isMobile = activeWidth < 768;
+  const maxShapeSize = Math.min(activeWidth, activeHeight) * (isMobile ? 0.9 : 0.7); 
   
   // Dynamic scalable sizing guarantees minimum 60 characters wide block across maxShapeSize for mobile density
   const fontSize = isMobile ? Math.max(10, Math.floor(maxShapeSize / (0.6 * 60))) : 16;
   const font = `400 ${fontSize}px "Courier Prime", "Courier New", monospace`;
   ctx.font = font;
 
-  let targetCenterY = height / 2; 
-  if (isFocused && isMobile) {
-      targetCenterY = height * 0.35; 
-  }
+  // Accurately finds the true dynamic physical center of the visible glass!
+  const targetCenterY = activePageTop + (activeHeight / 2); 
   
   if (currentCenterY === null) currentCenterY = height / 2;
   currentCenterY += (targetCenterY - currentCenterY) * delta * 0.005;
