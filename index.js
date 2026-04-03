@@ -434,8 +434,9 @@ function render(time) {
   }
   
   const isMobile = activeWidth < 768;
-  const headerOffset = isMobile ? 60 : 0;
-  const usableHeight = Math.max(0, activeHeight - headerOffset);
+  const topBuffer = (isMobile && !isFocused) ? 60 : 20; 
+  const bottomBuffer = (isMobile && isFocused) ? 80 : 20; 
+  const usableHeight = Math.max(0, activeHeight - topBuffer - bottomBuffer);
   
   const maxShapeSize = Math.min(activeWidth, usableHeight) * (isMobile ? 0.9 : 0.7); 
   
@@ -445,7 +446,7 @@ function render(time) {
   ctx.font = font;
 
   // Accurately finds the true dynamic physical center of the visible glass!
-  const targetCenterY = activePageTop + headerOffset + (usableHeight / 2); 
+  const targetCenterY = activePageTop + topBuffer + (usableHeight / 2); 
   
   if (currentCenterY === null) currentCenterY = height / 2;
   currentCenterY += (targetCenterY - currentCenterY) * delta * 0.005;
