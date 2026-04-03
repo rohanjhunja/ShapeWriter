@@ -420,13 +420,17 @@ function render(time) {
   const displayString = typedText || " ";
   const sourceText = Array(200).fill(displayString).join('');
 
-  const font = '400 16px "Courier Prime", "Courier New", monospace';
+  const maxShapeSize = Math.min(width, height) * 0.9; 
+  
+  // Dynamic scalable sizing guarantees minimum 60 characters wide block across maxShapeSize
+  const fontSize = Math.max(10, Math.floor(maxShapeSize / (0.6 * 60)));
+  const font = `400 ${fontSize}px "Courier Prime", "Courier New", monospace`;
   ctx.font = font;
 
-  // Max dimension bounds 
-  const maxShapeSize = Math.min(width, height) * 0.7; 
-  
-  const targetCenterY = height / 2; 
+  let targetCenterY = height / 2; 
+  if (isFocused && width < 768) {
+      targetCenterY = height * 0.35; 
+  }
   
   if (currentCenterY === null) currentCenterY = height / 2;
   currentCenterY += (targetCenterY - currentCenterY) * delta * 0.005;
@@ -476,7 +480,7 @@ function render(time) {
            
            cursor = line.end;
        }
-       currentY += 24; // 16px font with 4px tight leading
+       currentY += Math.floor(fontSize * 1.5); 
   }
   
   ctx.restore();
