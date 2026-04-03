@@ -15,6 +15,6 @@ ShapeWriter is an interactive, kinetic play-space that blurs the lines between t
 - **Play Anywhere**: Whether you're on a massive 4K monitor or quickly typing on a squeezed mobile screen, the text effortlessly scales and centers itself so your visual art is always perfectly framed.
 
 ### How it Works (The Short Version)
-Behind the curtain, there are no predefined images. ShapeWriter scans what you type, matches it against a massive dictionary of concepts, and quietly pulls invisible icons off the web. It then algorithmically traces the borders of those icons, weaving your literal text sentences into that shape at 60 frames per second. 
+Behind the curtain, there are no predefined images. ShapeWriter scans what you type, matches it against an expansive semantic dictionary, and quietly pulls invisible icons dynamically off the web via the **Lucide** CDN. It then uses **Vanilla JS**, **HTML Canvas**, and the **@chenglou/pretext** text-layout engine to algorithmically trace the edges of those SVG icons—weaving your literal sentences perfectly into the contour at 60 FPS.
 
-No heavy software. No plugins. Just words taking shape.
+No heavy software or massive frontend frameworks. Just a barebones **Vite** architecture and raw Javascript rendering magic!
