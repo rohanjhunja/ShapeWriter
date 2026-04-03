@@ -200,8 +200,14 @@ document.addEventListener('keydown', () => {
     }
 });
 
-hiddenInput.addEventListener('focus', () => isFocused = true);
-hiddenInput.addEventListener('blur', () => isFocused = false);
+hiddenInput.addEventListener('focus', () => {
+    isFocused = true;
+    document.body.classList.add('keyboard-open');
+});
+hiddenInput.addEventListener('blur', () => {
+    isFocused = false;
+    document.body.classList.remove('keyboard-open');
+});
 
 window.addEventListener('paste', (e) => {
     e.preventDefault();
@@ -231,9 +237,6 @@ if (pasteBtn) {
             if (clipboardText) {
                 const normalized = clipboardText.replace(/[\r\n]+/g, ' ');
                 pasteQueue.push(...normalized.split(''));
-                
-                // Return focus to hidden element quietly!
-                hiddenInput.focus();
             }
         } catch (err) {
             console.error('Failed to read from clipboard. Allow clipboard permissions.', err);
@@ -431,7 +434,10 @@ function render(time) {
   }
   
   const isMobile = activeWidth < 768;
-  const maxShapeSize = Math.min(activeWidth, activeHeight) * (isMobile ? 0.9 : 0.7); 
+  const headerOffset = isMobile ? 60 : 0;
+  const usableHeight = Math.max(0, activeHeight - headerOffset);
+  
+  const maxShapeSize = Math.min(activeWidth, usableHeight) * (isMobile ? 0.9 : 0.7); 
   
   // Dynamic scalable sizing guarantees minimum 60 characters wide block across maxShapeSize for mobile density
   const fontSize = isMobile ? Math.max(10, Math.floor(maxShapeSize / (0.6 * 60))) : 16;
@@ -439,7 +445,7 @@ function render(time) {
   ctx.font = font;
 
   // Accurately finds the true dynamic physical center of the visible glass!
-  const targetCenterY = activePageTop + (activeHeight / 2); 
+  const targetCenterY = activePageTop + headerOffset + (usableHeight / 2); 
   
   if (currentCenterY === null) currentCenterY = height / 2;
   currentCenterY += (targetCenterY - currentCenterY) * delta * 0.005;

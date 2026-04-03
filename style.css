@@ -83,3 +83,29 @@ body, html {
   0% { opacity: 0.2; }
   100% { opacity: 0.6; }
 }
+
+body.keyboard-open .instruction {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .top-left {
+    top: 1rem;
+    left: 1rem;
+    font-size: 0.75rem;
+  }
+  .bottom-center {
+    bottom: 1rem;
+    width: 90%;
+    text-align: center;
+  }
+  .top-right {
+    top: 1rem;
+    right: 1rem;
+  }
+  .bottom-right {
+    bottom: 1rem;
+    right: 1rem;
+  }
+}
