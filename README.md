@@ -1,20 +1,20 @@
-# ShapeWriter: A Dynamic Typographical Canvas
+# ShapeWriter: Type the Unseen
 
-**What if your words literally took the shape of their meaning?** 
+**What if your words could take the exact shape of what they mean?**
 
-ShapeWriter is an interactive, kinetic typography installation that seamlessly morphs your text into real-time geometric shapes, objects, and silhouettes as you type. It blurs the line between language and visual art.
+ShapeWriter is an interactive, kinetic play-space that blurs the lines between typing and drawing. It’s a completely freeform experiment: you type a thought, and the canvas instantly bends, loops, and stacks your sentences into real-time silhouettes as you go. 
 
-### Basic Capabilities
-- **Semantic Icon Morphing**: Type conversational words (like *lightning*, *camera*, *apple*, or *rubbish*) and watch the entire text canvas algorithmically wrap itself into the physical shape of the object.
-- **Intelligent Synonym Matching**: Powered by an extensive dictionary, the canvas understands contexts. Typing related words or short phrases dynamically resolves to root shapes instantly.
-- **Mobile-Fluid Interactivity**: Built with a strictly responsive, anti-zoom interaction engine that flawlessly centers your drawing inside the remaining visual screen glass—even while typing on a squashed mobile OS keyboard.
-- **Humanized Clipboard Pasting**: Pasting large chunks of text intelligently queues the characters, simulating an elegant human typewriter effect to gracefully morph the structure over time instead of instantaneous jumping.
+### Jump Right In
 
-### Technical Details
-Built as a lightweight, zero-dependency visual engine using raw **Vanilla JS / HTML Canvas** bundled by **Vite**. The mathematical core leverages `@chenglou/pretext` for high-performance text-layout wrapping, and dynamically resolves static line-art SVGs asynchronously from **Lucide** via CDN. The system scrapes these remote SVG paths pixel-by-pixel, translating standard vector boundaries into dense, responsive typographical grids running seamlessly at 60 Frames Per Second.
+🔗 **[Start Typing Here](https://rohanjhunja.github.io/ShapeWriter/)**
 
----
+### What can you do?
+- **Draw With Words**: Start typing common objects—try *lightning*, *camera*, *apple*, or *bicycle*—and watch as your entire paragraph dynamically folds itself into that very shape!
+- **Speak Naturally**: You don't have to guess magic keywords. The canvas understands thousands of conversational synonyms. *Storm* becomes a lightning bolt; *rubbish* morphs into a trash can. Let your imagination wander.
+- **Paste a Story**: Grab your favorite poem or an interesting quote and paste it straight in using the clipboard button! The canvas will carefully "type" it out for you organically, morphing the visual over time.
+- **Play Anywhere**: Whether you're on a massive 4K monitor or quickly typing on a squeezed mobile screen, the text effortlessly scales and centers itself so your visual art is always perfectly framed.
 
-### Experience it Live
-Dive into the live interactive canvas directly in your browser:
-🔗 **[Play with ShapeWriter Here](https://rohanjhunja.github.io/ShapeWriter/)**
+### How it Works (The Short Version)
+Behind the curtain, there are no predefined images. ShapeWriter scans what you type, matches it against a massive dictionary of concepts, and quietly pulls invisible icons off the web. It then algorithmically traces the borders of those icons, weaving your literal text sentences into that shape at 60 frames per second. 
+
+No heavy software. No plugins. Just words taking shape.
