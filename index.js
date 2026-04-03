@@ -180,8 +180,9 @@ window.addEventListener('resize', resize);
 const hiddenInput = document.createElement('input');
 hiddenInput.type = 'text';
 hiddenInput.style.position = 'absolute';
-hiddenInput.style.top = '25%'; // Positions it to scroll organically
+hiddenInput.style.top = '10%'; // Ensure organic natural scrolling anchors nicely above keyboard
 hiddenInput.style.left = '50%';
+hiddenInput.style.fontSize = '16px'; 
 hiddenInput.style.opacity = 0;
 hiddenInput.style.pointerEvents = 'none';
 hiddenInput.style.zIndex = -1;
